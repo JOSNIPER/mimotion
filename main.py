@@ -17,7 +17,8 @@ import util.push_util as push_util
 
 try:
     from dotenv import load_dotenv
-    load_dotenv(override=True)
+    # override=False：已存在的环境变量（如 GUI 面板传入的选中账号）优先于 .env
+    load_dotenv(override=False)
 except ImportError:
     pass
 
@@ -29,6 +30,25 @@ def get_int_value_default(_config: dict, _key, default):
 
 # 获取当前时间对应的最大和最小步数
 def get_min_max_by_time(hour=None, minute=None):
+    # 每日自定义步数：CUSTOM_STEP 非空时跳过时间折算，全天精确刷该值
+    # 面板、run.bat、定时任务三条入口都读同一个 .env，行为一致
+    custom = os.environ.get("CUSTOM_STEP")
+    if not custom:
+        custom = (globals().get("config") or {}).get("CUSTOM_STEP")
+    custom = str(custom or "").strip()
+    if custom:
+        # 支持 "20000"（每天固定）或 "12000-18000"（每天在区间内随机，更接近真人）
+        m = re.match(r"^(\d+)\s*[-~]\s*(\d+)$", custom)
+        if m:
+            lo, hi = int(m.group(1)), int(m.group(2))
+            if 1 <= lo <= hi <= 100000:
+                return lo, hi
+        try:
+            v = int(custom)
+            if 1 <= v <= 100000:
+                return v, v
+        except ValueError:
+            pass
     if hour is None:
         hour = time_bj.hour
     if minute is None:
