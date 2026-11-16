@@ -1,3 +1,16 @@
 /.idea/
 __pycache__/
+*.pyc
 .env
+
+# 本地运行产物：含账号、步数、token 等隐私数据，绝不能提交
+encrypted_tokens.data
+run_history.jsonl
+last_steps.json
+
+# 虚拟环境（体积大且可能含本机路径）
+venv/
+venv_old_hlb/
+
+# 本地工作记录
+.workbuddy/
